@@ -7,4 +7,10 @@
     <Nullable>enable</Nullable>
   </PropertyGroup>
 
+  <ItemGroup>
+    <Reference Include="GenericFunctions">
+      <HintPath>lib\GenericFunctions.dll</HintPath>
+    </Reference>
+  </ItemGroup>
+
 </Project>
