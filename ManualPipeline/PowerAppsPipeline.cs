@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Text.RegularExpressions;
-using GenericFunctions;
 
 namespace ManualPipeline;
 
@@ -8,8 +7,10 @@ public abstract partial class PowerAppsPipeline {
     private static readonly Regex re_PowerAppsCLIPath = MyRegex();
 
     /* Installation */
+    private const String confirmText = "PowerApps CLI is not installed. Install now? (y/n)\n";
+    private static readonly ConsoleKey[] confirmKeys = [ConsoleKey.Y, ConsoleKey.N]; // y, n
     public static void InstallAll(ref String? error) {
-        if (!Cli.CheckResponse_YN("PowerApps CLI is not installed. Install now? (y/n)")) {
+        if (!GenericFunctions.Cli.ConfirmResponse(confirmText, confirmKeys)) {
             error = "Exiting...";
             return;
         }
@@ -24,23 +25,11 @@ public abstract partial class PowerAppsPipeline {
     }
     
     private static String? InstallCLI() {
-        if (!Shell.AutoClose("winget install Microsoft.PowerAppsCLI")) {
+        if (!GenericFunctions.Shell.AutoClose("winget install Microsoft.PowerAppsCLI")) {
             return "\nPowerAppsCLI did not install correctly.\n\nCheck if winget is installed or has been disabled and check that the path has been added.\nInstall it manually from the Microsoft website here: https://aka.ms/PowerAppsCLI";
         }
         return null;
     }
-    // private static String? InstallPRT() {
-    //     if (!Shell.KeepOpen("pac tool prt")) {
-    //         return "\nPowerApps Plugin Registration Tool did not install correctly.\n\nInstall it manually by running pac tool prt.";
-    //     }
-    //     return null;
-    // }
-    // private static String? CreateAuth(String envName) {
-    //     if (!Shell.KeepOpen($"pac auth create --environment {envName} --name {envName}")) {
-    //         return $"\nFailed to create an authentication profile for {envName}.\n\nAdd one manually with: pac auth create --environment {envName} --name {envName}.";
-    //     }
-    //     return null;
-    // }
     
     /* Startup */
     public static Boolean Installed() {
@@ -51,47 +40,63 @@ public abstract partial class PowerAppsPipeline {
             if (String.IsNullOrEmpty(key) || String.IsNullOrEmpty(value)) {
                 continue;
             }
-            if (key.Contains("PATH", StringComparison.OrdinalIgnoreCase)) {
-                if (re_PowerAppsCLIPath.IsMatch(value)) {
-                    return true;
-                }
+            if (!key.Contains("PATH", StringComparison.OrdinalIgnoreCase)) {
+                continue;
+            }
+            if (re_PowerAppsCLIPath.IsMatch(value)) {
+                return true;
             }
         }
 
         return false;
     }
     public static String? UpdateCLI() {
-        if (!Shell.AutoClose("pac install latest")) {
+        if (!GenericFunctions.Shell.AutoClose("pac install latest")) {
             return "\nPowerAppsCLI update failed with an error.";
         }
         return null;
     }
     
-    /* Connecting */
+    /* Environment */
+    private const String envText = "\nEnvironment\nDev: 1) MITOUAT 2) MITO UAT\nProd: 3) idk\n";
+    private static readonly ConsoleKey[] envKeys = [ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3]; // 1, 2, 3
     public static String SelectEnvironment() {
-        Console.WriteLine("\nEnvironment\nDev: 1) MITOUAT 2) MITO UAT\nProd: 3) idk");
-        Int16 response = Cli.CheckResponse_Numbers(new []{ ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3, ConsoleKey.D4 });
+        ConsoleKey response = GenericFunctions.Cli.CheckResponse(envText, envKeys);
         String currentEnvironment = String.Empty;
-        if (response == 1) {
+        if (response == ConsoleKey.D1) {
             currentEnvironment = "MITOUAT";
         }
-        else if (response == 2) {
+        else if (response == ConsoleKey.D2) {
             currentEnvironment = "MITO UAT";
         }
-        else if (response == 3) {
+        else if (response == ConsoleKey.D3) {
             currentEnvironment = "MYMITONZ";
+        }
+        else {
+            Console.WriteLine("No valid response selected.");
         }
         return currentEnvironment;
     }
-    public static String SelectAuth(String envName) {
-        String? output = Shell.GetOutput($"pac auth select --name {envName}");
+    
+    /* Authentication */
+    public static String? SelectAuth(String envName, ref String? error) {
+        Console.WriteLine($"Using environment: {envName}");
+        String? output = GenericFunctions.Shell.GetOutput($"pac auth select --name {envName}");
         if (String.IsNullOrEmpty(output)) {
             return "Unexpected error when retrieving output, command returned no output.\nExiting...";
         }
-        return "\nFailed to select an authentication profile for this environment.\nCreating one...";
+        Console.WriteLine("\nFailed to select an authentication profile for this environment.\nCreating one...");
+        return CreateAuth(envName);
+    }
+    private static String? CreateAuth(String envName) {
+        if (!GenericFunctions.Shell.AutoClose($"pac auth create --environment {envName} --name {envName}")) {
+            return $"\nFailed to create an authentication profile for {envName}.\n\nAdd one manually with: pac auth create --environment {envName} --name {envName}.";
+        }
         return null;
     }
 
+    
+    
     [GeneratedRegex(@".*\\AppData\\Local\\Microsoft\\PowerAppsCLI\\.*", RegexOptions.IgnoreCase, "en-NZ")]
     private static partial Regex MyRegex();
 }

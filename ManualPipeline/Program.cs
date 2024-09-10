@@ -22,7 +22,7 @@ public static class Program {
             return;
         }
         env = PowerAppsPipeline.SelectEnvironment();
-        if ((error = PowerAppsPipeline.SelectAuth(env)) is not null) {
+        if ((error = PowerAppsPipeline.SelectAuth(env, ref error)) is not null) {
             Console.WriteLine(error);
             return;
         }
