@@ -84,7 +84,7 @@ public abstract partial class PowerAppsPipeline {
         return currentEnvironment;
     }
     public static String SelectAuth(String envName) {
-        String? output = Shell.ReturnOutput($"pac auth select --name {envName}");
+        String? output = Shell.GetOutput($"pac auth select --name {envName}");
         if (String.IsNullOrEmpty(output)) {
             return "Unexpected error when retrieving output, command returned no output.\nExiting...";
         }
