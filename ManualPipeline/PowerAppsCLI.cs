@@ -1,20 +1,17 @@
 ﻿using System.Text.RegularExpressions;
 namespace ManualPipeline;
 
-public abstract partial class PowerAppsPipeline {
+public abstract class PowerAppsCLI {
     private static readonly Regex re_PathPowerAppsCLI = new (@".*\\AppData\\Local\\Microsoft\\PowerAppsCLI.*", RegexOptions.IgnoreCase);
     private static readonly Regex re_PathGit = new (@".*\\Git\\cmd.*", RegexOptions.IgnoreCase);
 
     /* Installation */
-    private const String confirmText = "PowerApps CLI is not installed. Install now? (y/n)\n";
-    private static readonly ConsoleKey[] confirmKeys = [ConsoleKey.Y, ConsoleKey.N]; // y, n
+    private const String confirmText = "PowerApps CLI is not installed. Install now? (Y/N)\n";
     public static void InstallAll(ref String? error) {
-        if (!GenericFunctions.Cli.ConfirmResponse(confirmText, confirmKeys)) {
+        if (!GenericFunctions.Cli.ConfirmResponse(confirmText, ConsoleKey.Y, ConsoleKey.N)) {
             error = "Exiting...";
             return;
         }
-        
-        // CLI
         Console.WriteLine("\nInstalling the PowerApps CLI...");
         if ((error = InstallCLI()) is not null) {
             return;
@@ -48,22 +45,29 @@ public abstract partial class PowerAppsPipeline {
     /* Environment */
     private const String envText = "\nEnvironment\nDev: 1) MITOUAT 2) MITO UAT\nProd: 3) idk\n";
     private static readonly ConsoleKey[] envKeys = [ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3]; // 1, 2, 3
-    public static String SelectEnvironment() {
+    
+    public static (String, String) SelectEnvironment() {
         ConsoleKey response = GenericFunctions.Cli.CheckResponse(envText, envKeys);
-        String currentEnvironment = String.Empty;
+        String curEnvName;
+        String curEnvGUID;
+        
         if (response == ConsoleKey.D1) {
-            currentEnvironment = "MITOUAT";
+            curEnvName = "MITOUAT";
+            curEnvGUID = "9add4700-fdfc-42c0-9369-77a90ca8a9e2";
         }
         else if (response == ConsoleKey.D2) {
-            currentEnvironment = "MITO UAT";
+            curEnvName = "MITO UAT";
+            curEnvGUID = String.Empty;
         }
         else if (response == ConsoleKey.D3) {
-            currentEnvironment = "MYMITONZ";
+            curEnvName = "MYMITONZ";
+            curEnvGUID = String.Empty;
         }
         else {
-            Console.WriteLine("No valid response selected.");
+            Console.WriteLine("Error: User input options contain an invalid option.");
+            return (String.Empty, String.Empty);
         }
-        return currentEnvironment;
+        return (curEnvName, curEnvGUID);
     }
     
     /* Authentication */

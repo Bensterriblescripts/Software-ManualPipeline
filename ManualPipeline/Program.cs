@@ -1,12 +1,12 @@
 ﻿namespace ManualPipeline;
 
 public static class Program {
-    public static void Main(string[] args) {
+    public static void Main(String[] args) {
         String? error = null;
 
         /* PowerApps Portal CLI*/
-        if (!PowerAppsPipeline.Installed()) {
-            PowerAppsPipeline.InstallAll(ref error);
+        if (!PowerAppsCLI.Installed()) {
+            PowerAppsCLI.InstallAll(ref error);
             if (error is not null) {
                 Console.WriteLine(error);
                 return;
@@ -16,16 +16,25 @@ public static class Program {
             return;
         }
         Console.WriteLine("Found PowerApps CLI.");
-        if ((error = PowerAppsPipeline.UpdateCLI()) is not null) {
+        if ((error = PowerAppsCLI.UpdateCLI()) is not null) {
             Console.WriteLine(error);
             return;
         }
-        String env = PowerAppsPipeline.SelectEnvironment();
-        if ((error = PowerAppsPipeline.SelectAuth(env, ref error)) is not null) {
+        (String envName, String envGUID) = PowerAppsCLI.SelectEnvironment();
+        if ((error = PowerAppsCLI.SelectAuth(envName, ref error)) is not null) {
             Console.WriteLine(error);
             return;
         }
-        Console.WriteLine($"Environment set to {env}.");
+        Console.WriteLine($"Environment set to {envName}.");
+        
+        /* PowerApps Pages */
+        if (!PowerAppsPages.Installed(envName)) {
+            if ((error = PowerAppsPages.CreateRepo(envName)) != null) {
+                Console.WriteLine(error);
+                return;
+            }
+        }
+        
         
         
 
