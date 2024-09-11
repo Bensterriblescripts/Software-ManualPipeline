@@ -3,8 +3,7 @@
 public static class Program {
     public static void Main(string[] args) {
         String? error = null;
-        String env;
-        
+
         /* PowerApps Portal CLI*/
         if (!PowerAppsPipeline.Installed()) {
             PowerAppsPipeline.InstallAll(ref error);
@@ -21,7 +20,7 @@ public static class Program {
             Console.WriteLine(error);
             return;
         }
-        env = PowerAppsPipeline.SelectEnvironment();
+        String env = PowerAppsPipeline.SelectEnvironment();
         if ((error = PowerAppsPipeline.SelectAuth(env, ref error)) is not null) {
             Console.WriteLine(error);
             return;

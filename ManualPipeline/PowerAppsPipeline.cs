@@ -1,10 +1,9 @@
-﻿using System.Collections;
-using System.Text.RegularExpressions;
-
+﻿using System.Text.RegularExpressions;
 namespace ManualPipeline;
 
 public abstract partial class PowerAppsPipeline {
-    private static readonly Regex re_PowerAppsCLIPath = MyRegex();
+    private static readonly Regex re_PathPowerAppsCLI = new (@".*\\AppData\\Local\\Microsoft\\PowerAppsCLI.*", RegexOptions.IgnoreCase);
+    private static readonly Regex re_PathGit = new (@".*\\Git\\cmd.*", RegexOptions.IgnoreCase);
 
     /* Installation */
     private const String confirmText = "PowerApps CLI is not installed. Install now? (y/n)\n";
@@ -25,35 +24,24 @@ public abstract partial class PowerAppsPipeline {
     }
     
     private static String? InstallCLI() {
-        if (!GenericFunctions.Shell.AutoClose("winget install Microsoft.PowerAppsCLI")) {
-            return "\nPowerAppsCLI did not install correctly.\n\nCheck if winget is installed or has been disabled and check that the path has been added.\nInstall it manually from the Microsoft website here: https://aka.ms/PowerAppsCLI";
-        }
+        GenericFunctions.Shell.AutoClose("winget install Microsoft.PowerAppsCLI");
         return null;
     }
     
     /* Startup */
     public static Boolean Installed() {
-        IDictionary envs = Environment.GetEnvironmentVariables();
-        foreach (DictionaryEntry entry in envs) {
-            String? key = entry.Key.ToString();
-            String? value = entry.Value?.ToString();
-            if (String.IsNullOrEmpty(key) || String.IsNullOrEmpty(value)) {
-                continue;
-            }
-            if (!key.Contains("PATH", StringComparison.OrdinalIgnoreCase)) {
-                continue;
-            }
-            if (re_PowerAppsCLIPath.IsMatch(value)) {
-                return true;
-            }
+        if (!GenericFunctions.Env.PathExistsRegex(re_PathPowerAppsCLI)) {
+            Console.WriteLine("PowerApps CLI is not installed.");
+            return false;
         }
-
-        return false;
+        if (!GenericFunctions.Env.PathExistsRegex(re_PathGit)) {
+            Console.WriteLine("Git is not installed.");
+            return false;
+        }
+        return true;
     }
     public static String? UpdateCLI() {
-        if (!GenericFunctions.Shell.AutoClose("pac install latest")) {
-            return "\nPowerAppsCLI update failed with an error.";
-        }
+        GenericFunctions.Shell.AutoClose("pac install latest");
         return null;
     }
     
@@ -89,14 +77,7 @@ public abstract partial class PowerAppsPipeline {
         return CreateAuth(envName);
     }
     private static String? CreateAuth(String envName) {
-        if (!GenericFunctions.Shell.AutoClose($"pac auth create --environment {envName} --name {envName}")) {
-            return $"\nFailed to create an authentication profile for {envName}.\n\nAdd one manually with: pac auth create --environment {envName} --name {envName}.";
-        }
+        GenericFunctions.Shell.AutoClose($"pac auth create --environment {envName} --name {envName}");
         return null;
     }
-
-    
-    
-    [GeneratedRegex(@".*\\AppData\\Local\\Microsoft\\PowerAppsCLI\\.*", RegexOptions.IgnoreCase, "en-NZ")]
-    private static partial Regex MyRegex();
 }
