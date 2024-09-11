@@ -28,8 +28,9 @@ public static class Program {
         Console.WriteLine($"Environment set to {envName}.");
         
         /* PowerApps Pages */
-        if (!PowerAppsPages.Installed(envName)) {
-            if ((error = PowerAppsPages.CreateRepo(envName)) != null) {
+        String path = $@"C:\Repositories\MyMITOPortal\{envName}";
+        if (!PowerAppsPages.Installed(path)) {
+            if ((error = PowerAppsPages.CreateRepo(path)) != null) {
                 Console.WriteLine(error);
                 return;
             }
