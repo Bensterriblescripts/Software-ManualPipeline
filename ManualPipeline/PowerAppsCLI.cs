@@ -1,4 +1,5 @@
 ﻿using System.Text.RegularExpressions;
+using GenericFunctions;
 namespace ManualPipeline;
 
 public abstract class PowerAppsCLI {
@@ -8,7 +9,7 @@ public abstract class PowerAppsCLI {
     /* Installation */
     private const String confirmText = "PowerApps CLI is not installed. Install now? (Y/N)\n";
     public static void InstallAll(ref String? error) {
-        if (!GenericFunctions.Cli.ConfirmResponse(confirmText, ConsoleKey.Y, ConsoleKey.N)) {
+        if (!Cli.ConfirmResponse(confirmText, ConsoleKey.Y, ConsoleKey.N)) {
             error = "Exiting...";
             return;
         }
@@ -21,24 +22,24 @@ public abstract class PowerAppsCLI {
     }
     
     private static String? InstallCLI() {
-        GenericFunctions.Shell.AutoClose("winget install Microsoft.PowerAppsCLI");
+        Shell.AutoClose("winget install Microsoft.PowerAppsCLI");
         return null;
     }
     
     /* Startup */
     public static Boolean Installed() {
-        if (!GenericFunctions.Env.PathExistsRegex(re_PathPowerAppsCLI)) {
+        if (!Env.PathExistsRegex(re_PathPowerAppsCLI)) {
             Console.WriteLine("PowerApps CLI is not installed.");
             return false;
         }
-        if (!GenericFunctions.Env.PathExistsRegex(re_PathGit)) {
+        if (!Env.PathExistsRegex(re_PathGit)) {
             Console.WriteLine("Git is not installed.");
             return false;
         }
         return true;
     }
     public static String? UpdateCLI() {
-        GenericFunctions.Shell.AutoClose("pac install latest");
+        Shell.AutoClose("pac install latest");
         return null;
     }
     
@@ -47,7 +48,7 @@ public abstract class PowerAppsCLI {
     private static readonly ConsoleKey[] envKeys = [ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3]; // 1, 2, 3
     
     public static (String, String) SelectEnvironment() {
-        ConsoleKey response = GenericFunctions.Cli.CheckResponse(envText, envKeys);
+        ConsoleKey response = Cli.CheckResponse(envText, envKeys);
         String curEnvName;
         String curEnvGUID;
         
@@ -73,7 +74,7 @@ public abstract class PowerAppsCLI {
     /* Authentication */
     public static String? SelectAuth(String envName, ref String? error) {
         Console.WriteLine($"Using environment: {envName}");
-        String? output = GenericFunctions.Shell.GetOutput($"pac auth select --name {envName}");
+        String? output = Shell.GetOutput($"pac auth select --name {envName}");
         if (output == null) {
             return "Unexpected error when retrieving output, command returned no output.\nExiting...";
         }
@@ -84,7 +85,7 @@ public abstract class PowerAppsCLI {
         return CreateAuth(envName);
     }
     private static String? CreateAuth(String envName) {
-        GenericFunctions.Shell.AutoClose($"pac auth create --environment {envName} --name {envName}");
+        Shell.AutoClose($"pac auth create --environment {envName} --name {envName}");
         return null;
     }
 }

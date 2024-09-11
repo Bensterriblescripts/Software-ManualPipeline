@@ -1,4 +1,6 @@
-﻿namespace ManualPipeline;
+﻿using GenericFunctions;
+
+namespace ManualPipeline;
 
 public static class PowerAppsPages {
     
@@ -24,7 +26,7 @@ public static class PowerAppsPages {
     /* Git */
     public static String? PullRepo(String path) {
         try {
-            GenericFunctions.Shell.AutoClose(
+            Shell.AutoClose(
                 $"cd {path}\ngit clone https://mitodevcode@dev.azure.com/mitodevcode/mitosource/_git/MyMITOPortal");
         }
         catch (Exception e) {
