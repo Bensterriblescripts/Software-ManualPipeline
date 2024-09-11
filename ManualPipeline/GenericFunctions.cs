@@ -80,10 +80,10 @@ public static class GenericFunctions {
             String output = p.StandardOutput.ReadToEnd();
             p.WaitForExit();
 
-            if (output.Trim() == String.Empty) {
+            if (String.IsNullOrEmpty(output)) {
                 return null;
             }
-            return output.Trim();
+            return output;
         }
         /// <summary>
         /// Execute a CMD command and remain open until closed manually.

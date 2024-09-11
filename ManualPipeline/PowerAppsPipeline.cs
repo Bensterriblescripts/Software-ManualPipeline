@@ -70,8 +70,11 @@ public abstract partial class PowerAppsPipeline {
     public static String? SelectAuth(String envName, ref String? error) {
         Console.WriteLine($"Using environment: {envName}");
         String? output = GenericFunctions.Shell.GetOutput($"pac auth select --name {envName}");
-        if (String.IsNullOrEmpty(output)) {
+        if (output == null) {
             return "Unexpected error when retrieving output, command returned no output.\nExiting...";
+        }
+        if (output.Contains(envName)) {
+            return null;
         }
         Console.WriteLine("\nFailed to select an authentication profile for this environment.\nCreating one...");
         return CreateAuth(envName);
