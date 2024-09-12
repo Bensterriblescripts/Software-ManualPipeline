@@ -44,7 +44,7 @@ public abstract class PowerAppsCLI {
     }
     
     /* Environment */
-    private const String envText = "\nEnvironment\nDev: 1) MITOUAT 2) MITO UAT\nProd: 3) idk\n";
+    private const String envText = "\nEnvironment\nDev: 1) MITOUAT\nProd: 2) \n";
     private static readonly ConsoleKey[] envKeys = [ConsoleKey.D1, ConsoleKey.D2, ConsoleKey.D3]; // 1, 2, 3
     
     public static (String, String) SelectEnvironment() {
@@ -58,10 +58,6 @@ public abstract class PowerAppsCLI {
         }
         else if (response == ConsoleKey.D2) {
             curEnvName = "MITO UAT";
-            curEnvGUID = String.Empty;
-        }
-        else if (response == ConsoleKey.D3) {
-            curEnvName = "MYMITONZ";
             curEnvGUID = String.Empty;
         }
         else {
